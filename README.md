@@ -1,4 +1,4 @@
-# Building a Decentralized Exchange on Celo with Solidity: A Comprehensive Tutorial
+![em-remix-2](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/03cea7ec-f9f6-4bc8-aad8-c0a1b46ca62e)# Building a Decentralized Exchange on Celo with Solidity: A Comprehensive Tutorial
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -82,6 +82,7 @@ Before we begin, ensure you have the following:
 1. **Web Browser**: Make sure you have a modern web browser such as Google Chrome, Mozilla Firefox, or Brave.
 2. **Internet Connection**: Ensure you have a stable internet connection to access the Remix IDE.
 3. **Celo Wallet**: Install a Celo-compatible wallet extension like MetaMask or Valora to interact with Celo contracts and transactions.
+4. **Celo Faucet** Obtain celo alfajores token to your wallet. Visit [Celo faucet](https://faucet.celo.org/alfajores) 
 
 ### Installation
 
@@ -398,18 +399,23 @@ In this section, we'll guide you through the process of deploying and interactin
 ### Deployment
 
 1. **Open Remix IDE**: Visit the [Remix website](https://remix.ethereum.org/) to launch the Remix IDE.
+   ![em-remix-1](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/b2fd6601-c41e-4bc7-8fb2-fdde6bc9ac6c)
 
-2. **Create or Import Contract**: If you haven't already, create a new file for your Solidity smart contract in Remix, or import an existing contract from your local filesystem or GitHub repository.
-
+2. **Create Contract**: Create a new file for your Solidity smart contract in Remix and paste the complete code.
+![em-remix-2](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/3de5bd4c-231c-4f10-b936-e127a1562499)
+   
 3. **Compile Contract**: Click on the "Solidity Compiler" tab in the sidebar and select the appropriate compiler version for your contract. Click "Compile" to compile your contract code.
+![em-remix-3](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/72ce2c43-5e20-4b7a-b4db-64a52eb88eea)
 
-4. **Deploy Contract**: Once compiled successfully, switch to the "Deploy & Run Transactions" tab. Select the desired environment (e.g., JavaScript VM, Injected Web3, or Celo) from the dropdown menu.
+6. **Deploy Contract**: Once compiled successfully, switch to the "Deploy & Run Transactions" tab. Select the desired environment in our case, Injected Web3 from the dropdown menu and connect your CELO Alfajores wallet
+![em-remix-4](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/25405978-b65b-490c-ae95-ac0eaf05809f)
 
-5. **Deploy Contract**: Click on the "Deploy" button to deploy your contract to the selected network. If deploying to Celo, ensure that Remix is connected to a Celo network node (see the "Setting Up Development Environment" section for instructions).
+7. **Deploy Contract**: Click on the "Deploy" button to deploy to CELO Alfajores network.
 
-6. **Confirm Deployment**: Confirm the deployment transaction in your connected wallet (e.g., MetaMask) if prompted. Wait for the transaction to be confirmed on the blockchain.
+   
+9. **Confirm Deployment**: Confirm the deployment transaction in your connected wallet (e.g., MetaMask) if prompted. Wait for the transaction to be confirmed on the blockchain.
 
-7. **Contract Address**: Once deployed, Remix will display the address of your deployed contract. Copy this address for future interactions.
+10. **Contract Address**: Once deployed, Remix will display the address of your deployed contract. Copy this address for future interactions.
 
 ### Interacting with the Contract
 
