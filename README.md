@@ -168,10 +168,8 @@ interface IERC20 {
 ```
 
 #### Explanation:
-- This is an interface for the ERC-20 token standard, which defines a set of functions that ERC-20 compliant tokens must implement.
-- Interfaces in Solidity provide a way to define the structure and function signatures that other contracts must adhere to.
+
 - The interface declares four functions required by the ERC-20 standard: `transfer`, `transferFrom`, `balanceOf`, and `approve`.
-- Each function declaration specifies its visibility (`external`), parameters, return type, and whether it can modify state (`view` or `returns (bool)`).
 - The `transfer` function allows the token contract to transfer tokens to a specified recipient.
 - The `transferFrom` function allows authorized addresses to transfer tokens from one account to another.
 - The `balanceOf` function returns the balance of tokens for a given account.
