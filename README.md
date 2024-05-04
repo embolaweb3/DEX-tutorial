@@ -137,6 +137,100 @@ Our decentralized exchange smart contract provides the following key functionali
 ## Contract Functions
 In this section, we'll delve into the functions implemented in our Solidity smart contract to facilitate the operation of our decentralized exchange (DEX) on the Celo blockchain. These functions handle various aspects of token management, order creation and fulfillment, and trade execution, enabling users to interact seamlessly with the exchange.
 
+
+### SPDX-License-Identifier
+
+```solidity
+// SPDX-License-Identifier: MIT
+```
+
+#### Explanation:
+- SPDX-License-Identifier is a special comment recognized by various tools and platforms to specify the license under which the code is distributed.
+
+### Solidity Version Pragma
+
+```solidity
+pragma solidity ^0.8.0;
+```
+
+#### Explanation:
+- The Solidity version pragma specifies the version of the Solidity compiler to be used for compiling the contract.
+- `^0.8.0` indicates that the contract can be compiled using any compiler version starting from version 0.8.0 up to, but not including, version 0.9.0.
+
+### Interface IERC20
+
+```solidity
+interface IERC20 {
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+```
+
+#### Explanation:
+- This is an interface for the ERC-20 token standard, which defines a set of functions that ERC-20 compliant tokens must implement.
+- Interfaces in Solidity provide a way to define the structure and function signatures that other contracts must adhere to.
+- The interface declares four functions required by the ERC-20 standard: `transfer`, `transferFrom`, `balanceOf`, and `approve`.
+- Each function declaration specifies its visibility (`external`), parameters, return type, and whether it can modify state (`view` or `returns (bool)`).
+- The `transfer` function allows the token contract to transfer tokens to a specified recipient.
+- The `transferFrom` function allows authorized addresses to transfer tokens from one account to another.
+- The `balanceOf` function returns the balance of tokens for a given account.
+- The `approve` function allows an address (spender) to spend tokens on behalf of the token owner, up to the specified amount.
+
+- `admin`: Stores the address of the contract admin, who has special privileges.
+- `balances`: Maps token balances for each user on the exchange. It tracks the amount of each token held by each user.
+- `tokens`: Tracks the supported tokens on the exchange by mapping token addresses to boolean values, indicating whether a token is supported or not.
+
+These state variables are essential for managing user balances, supporting tokens, and controlling administrative functions within the decentralized exchange smart contract.
+
+### Events
+```solidity
+event TokenAdded(address indexed token);
+event TokenRemoved(address indexed token);
+event Trade(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet);
+event OrderCreated(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet, address indexed creator);
+event OrderFilled(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet, address indexed filler);
+```
+#### Explanation:
+- `TokenAdded`: Signals the addition of a new token to the exchange.
+- `TokenRemoved`: Indicates the removal of a token from the exchange.
+- `Trade`: Represents a trade event, specifying token pairs and trade amounts.
+- `OrderCreated`: Marks the creation of a new order, including token pairs, amounts, and creator.
+- `OrderFilled`: Denotes the successful filling of an order, specifying token pairs, amounts, and filler.
+
+These events provide essential notifications about token management, trades, and order activities within the decentralized exchange.
+
+### `struct Order`
+
+```solidity
+struct Order {
+    address tokenGive;
+    uint256 amountGive;
+    address tokenGet;
+    uint256 amountGet;
+    address creator;
+}
+```
+
+#### Explanation:
+- This is a struct named `Order`, which represents an order placed on the decentralized exchange.
+- It encapsulates the details of an order, including the tokens involved, the amounts to be exchanged, and the creator of the order.
+- The struct has the following fields:
+  - `tokenGive`: The address of the token to be given by the user placing the order.
+  - `amountGive`: The amount of `tokenGive` to be given by the user placing the order.
+  - `tokenGet`: The address of the token to be received by the user placing the order.
+  - `amountGet`: The amount of `tokenGet` to be received by the user placing the order.
+  - `creator`: The address of the user who created the order.
+- By defining this struct, the contract can conveniently group together the various attributes of an order, making it easier to manage and manipulate orders within the exchange.
+
+### `Order[] public orders;`
+
+#### Explanation:
+- This is a public state variable named `orders`, which is an array of `Order` structs.
+- This array provides a way to track and manage the orders placed on the exchange, facilitating order creation, retrieval, and management functionalities.
+
+
 ### Constructor
 
 ```solidity
@@ -148,6 +242,19 @@ constructor() {
 #### Explanation:
 - The constructor is a special function that is automatically executed once when the contract is deployed.
 - In our constructor, we set the address of the contract deployer (`msg.sender`) as the admin.
+
+### `modifier onlyAdmin()`
+
+```solidity
+modifier onlyAdmin() {
+    require(msg.sender == admin, "Only admin can call this function");
+    _;
+}
+```
+
+#### Explanation:
+- This is a modifier named `onlyAdmin`, which restricts access to functions or operations to the contract's admin.
+- The underscore `_` indicates where the modified function's body will be inserted during execution.
 
 ### Admin Functions
 
@@ -227,7 +334,58 @@ function getBalance(address _token, address _user) external view returns (uint25
 - The `getBalance` function allows users to retrieve their token balance stored in the exchange contract.
 - It takes the token address and user address as parameters and returns the corresponding balance from the `balances` mapping.
 
-This is the Markdown representation of the code and explanations for each function in your decentralized exchange smart contract. Feel free to adjust the formatting or add more details as needed. Let me know if you need further assistance with the remaining functions!
+### Order Management
+
+#### Create Order
+
+```solidity
+function createOrder(address _tokenGive, uint256 _amountGive, address _tokenGet, uint256 _amountGet) external {
+        require(tokens[_tokenGive] && tokens[_tokenGet], "Tokens not supported");
+        require(balances[_tokenGive][msg.sender] >= _amountGive, "Insufficient balance");
+
+        Order memory newOrder = Order({
+            tokenGive: _tokenGive,
+            amountGive: _amountGive,
+            tokenGet: _tokenGet,
+            amountGet: _amountGet,
+            creator: msg.sender
+        });
+
+        orders.push(newOrder);
+
+        emit OrderCreated(_tokenGive, _amountGive, _tokenGet, _amountGet, msg.sender);
+    }
+```
+### Explanation
+
+- Allows users to create new orders on the decentralized exchange.
+- Requires that both the giving and receiving tokens are supported on the exchange and that the user has enough balance to fulfill the order.
+- Creates a new order with the provided token addresses, amounts, and the address of the user creating the order.
+- Adds the new order to the `orders` array.
+- Emits an `OrderCreated` event with the details of the newly created order.
+
+#### Fill order
+
+```solidity
+ function fillOrder(uint256 _orderId) external {
+        require(_orderId < orders.length, "Invalid order ID");
+        Order memory order = orders[_orderId];
+
+        require(balances[order.tokenGive][msg.sender] >= order.amountGive, "Insufficient balance");
+
+        balances[order.tokenGive][msg.sender] -= order.amountGive;
+        balances[order.tokenGet][msg.sender] += order.amountGet;
+
+        emit OrderFilled(order.tokenGive, order.amountGive, order.tokenGet, order.amountGet, msg.sender);
+    }
+```
+### Explanation
+
+- Allows users to fill an existing order on the exchange specified by `_orderId`.
+- Checks if the order ID is valid and within the range of available orders.
+- Validates if the user has enough balance to fill the order.
+- Transfers tokens from the user to the order creator as per the order details.
+- Emits an `OrderFilled` event with the details of the filled order.
 
 ## Deploying and Interacting with the Contract
 
