@@ -1,4 +1,3 @@
-
 # Building a Decentralized Exchange on Celo with Solidity: A Comprehensive Tutorial
 
 ## Table of Contents
@@ -177,7 +176,14 @@ interface IERC20 {
 - The `transferFrom` function allows authorized addresses to transfer tokens from one account to another.
 - The `balanceOf` function returns the balance of tokens for a given account.
 - The `approve` function allows an address (spender) to spend tokens on behalf of the token owner, up to the specified amount.
-
+  
+### Addresses
+```solidity
+    address public admin;
+    mapping(address => mapping(address => uint256)) public balances;
+    mapping(address => bool) public tokens;
+```
+### Explanation
 - `admin`: Stores the address of the contract admin, who has special privileges.
 - `balances`: Maps token balances for each user on the exchange. It tracks the amount of each token held by each user.
 - `tokens`: Tracks the supported tokens on the exchange by mapping token addresses to boolean values, indicating whether a token is supported or not.
