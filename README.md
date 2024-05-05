@@ -450,6 +450,107 @@ Now that you've built your decentralized exchange prototype, there are several a
 
 By continuing to iterate and improve your decentralized exchange, you can contribute to the growth and development of decentralized finance (DeFi) on the Celo blockchain.
 
+## Updated Smart Contract 
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface IERC20 {
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+
+contract DecentralizedExchange {
+    address public admin;
+    mapping(address => mapping(address => uint256)) public balances;
+    mapping(address => bool) public tokens;
+    Order[] public orders;
+
+    struct Order {
+        address tokenGive;
+        uint256 amountGive;
+        address tokenGet;
+        uint256 amountGet;
+        address creator;
+        bool filled;
+    }
+
+    event TokenAdded(address indexed token);
+    event TokenRemoved(address indexed token);
+    event Trade(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet, address indexed creator, address indexed filler);
+    event OrderCreated(uint256 indexed orderId, address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet);
+    event OrderFilled(uint256 indexed orderId);
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can call this");
+        _;
+    }
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    function addToken(address _token) external onlyAdmin {
+        tokens[_token] = true;
+        emit TokenAdded(_token);
+    }
+
+    function removeToken(address _token) external onlyAdmin {
+        delete tokens[_token];
+        emit TokenRemoved(_token);
+    }
+
+    function deposit(address _token, uint256 _amount) external {
+        require(tokens[_token], "Token not supported");
+        IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        balances[_token][msg.sender] += _amount;
+    }
+
+    function withdraw(address _token, uint256 _amount) external {
+        require(balances[_token][msg.sender] >= _amount, "Insufficient balance");
+        balances[_token][msg.sender] -= _amount;
+        IERC20(_token).transfer(msg.sender, _amount);
+    }
+
+    function createOrder(address _tokenGive, uint256 _amountGive, address _tokenGet, uint256 _amountGet) external {
+        require(tokens[_tokenGive] && tokens[_tokenGet], "One or both tokens not supported");
+        require(balances[_tokenGive][msg.sender] >= _amountGive, "Insufficient balance for order");
+        
+        Order memory newOrder = Order({
+            tokenGive: _tokenGive,
+            amountGive: _amountGive,
+            tokenGet: _tokenGet,
+            amountGet: _amountGet,
+            creator: msg.sender,
+            filled: false
+        });
+
+        orders.push(newOrder);
+        emit OrderCreated(orders.length - 1, _tokenGive, _amountGive, _tokenGet, _amountGet);
+    }
+
+    function fillOrder(uint256 _orderId) external {
+        require(_orderId < orders.length && !orders[_orderId].filled, "Invalid order ID or order already filled");
+        Order storage order = orders[_orderId];
+
+        require(balances[order.tokenGet][msg.sender] >= order.amountGet, "Insufficient balance to fill order");
+        
+        balances[order.tokenGive][order.creator] -= order.amountGive;
+        balances[order.tokenGet][msg.sender] -= order.amountGet;
+        balances[order.tokenGive][msg.sender] += order.amountGive;
+        balances[order.tokenGet][order.creator] += order.amountGet;
+        
+        order.filled = true;
+        emit OrderFilled(_orderId);
+        emit Trade(order.tokenGive, order.amountGive, order.tokenGet, order.amountGet, order.creator, msg.sender);
+    }
+}
+
+```
+
 ### Resources
 
 - [Celo Developer Documentation](https://docs.celo.org/)
