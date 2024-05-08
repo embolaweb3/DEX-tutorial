@@ -409,11 +409,12 @@ In this section, we'll guide you through the process of deploying and interactin
 ![em-remix-4](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/25405978-b65b-490c-ae95-ac0eaf05809f)
 
 7. **Deploy Contract**: Click on the "Deploy" button to deploy to CELO Alfajores network.
-
+![em-remix-5](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/1be7312f-6819-40b6-bb08-f008e9cd99ad)
    
 9. **Confirm Deployment**: Confirm the deployment transaction in your connected wallet (e.g., MetaMask) if prompted. Wait for the transaction to be confirmed on the blockchain.
 
 10. **Contract Address**: Once deployed, Remix will display the address of your deployed contract. Copy this address for future interactions.
+![em-remix-6](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/5da07d10-0318-4045-aeeb-34003eeb670f)
 
 ### Interacting with the Contract
 
