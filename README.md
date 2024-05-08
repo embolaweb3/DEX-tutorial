@@ -14,6 +14,7 @@
     - [Token Management](#token-management)
     - [Balances Management](#balances-management)
     - [Order Management](#order-management)
+    - [Complete Code](#complete-code)
 6. [Deploying and Interacting with the Contract](#deploying-and-interacting-with-the-contract)
     - [Deployment](#deployment)
     - [Interacting with the Contract](#interacting-with-the-contract)
@@ -390,6 +391,106 @@ function createOrder(address _tokenGive, uint256 _amountGive, address _tokenGet,
 - Transfers tokens from the user to the order creator as per the order details.
 - Emits an `OrderFilled` event with the details of the filled order.
 
+### Complete Code
+
+```
+// SPDX-License-Identifier: MIT
+pragma solidity  0.8.0;
+
+interface IERC20 {
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+
+contract DecentralizedExchange {
+    address public admin;
+    mapping(address => mapping(address => uint256)) public balances;
+    mapping(address => bool) public tokens;
+
+    event TokenAdded(address indexed token);
+    event TokenRemoved(address indexed token);
+    event Trade(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet);
+    event OrderCreated(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet, address indexed creator);
+    event OrderFilled(address indexed tokenGive, uint256 amountGive, address indexed tokenGet, uint256 amountGet, address indexed filler);
+
+    struct Order {
+        address tokenGive;
+        uint256 amountGive;
+        address tokenGet;
+        uint256 amountGet;
+        address creator;
+    }
+
+    Order[] public orders;
+
+    constructor() {
+        admin = msg.sender;
+    }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin can call this function");
+        _;
+    }
+
+    function addToken(address _token) external onlyAdmin {
+        tokens[_token] = true;
+        emit TokenAdded(_token);
+    }
+
+    function removeToken(address _token) external onlyAdmin {
+        delete tokens[_token];
+        emit TokenRemoved(_token);
+    }
+
+    function getBalance(address _token, address _user) external view returns (uint256) {
+        return balances[_token][_user];
+    }
+
+    function deposit(address _token, uint256 _amount) external {
+        require(tokens[_token], "Token not supported");
+        IERC20(_token).transferFrom(msg.sender, address(this), _amount);
+        balances[_token][msg.sender] += _amount;
+    }
+
+    function withdraw(address _token, uint256 _amount) external {
+        require(balances[_token][msg.sender] >= _amount, "Insufficient balance");
+        balances[_token][msg.sender] -= _amount;
+        IERC20(_token).transfer(msg.sender, _amount);
+    }
+
+    function createOrder(address _tokenGive, uint256 _amountGive, address _tokenGet, uint256 _amountGet) external {
+        require(tokens[_tokenGive] && tokens[_tokenGet], "Tokens not supported");
+        require(balances[_tokenGive][msg.sender] >= _amountGive, "Insufficient balance");
+
+        Order memory newOrder = Order({
+            tokenGive: _tokenGive,
+            amountGive: _amountGive,
+            tokenGet: _tokenGet,
+            amountGet: _amountGet,
+            creator: msg.sender
+        });
+
+        orders.push(newOrder);
+
+        emit OrderCreated(_tokenGive, _amountGive, _tokenGet, _amountGet, msg.sender);
+    }
+
+    function fillOrder(uint256 _orderId) external {
+        require(_orderId < orders.length, "Invalid order ID");
+        Order memory order = orders[_orderId];
+
+        require(balances[order.tokenGive][msg.sender] >= order.amountGive, "Insufficient balance");
+
+        balances[order.tokenGive][msg.sender] -= order.amountGive;
+        balances[order.tokenGet][msg.sender] += order.amountGet;
+
+        emit OrderFilled(order.tokenGive, order.amountGive, order.tokenGet, order.amountGet, msg.sender);
+    }
+}
+
+```
 ## Deploying and Interacting with the Contract
 
 In this section, we'll guide you through the process of deploying and interacting with the decentralized exchange (DEX) smart contract using Remix, an online Solidity IDE. Remix provides a convenient interface for deploying and testing smart contracts directly from your web browser.
