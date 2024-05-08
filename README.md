@@ -150,7 +150,7 @@ In this section, we'll delve into the functions implemented in our Solidity smar
 ### Solidity Version Pragma
 
 ```solidity
-pragma solidity ^0.8.0;
+pragma solidity 0.8.0;
 ```
 
 #### Explanation:
