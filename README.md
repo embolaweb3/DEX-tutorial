@@ -1,5 +1,3 @@
-![em-remix-2](https://github.com/embolaweb3/DEX-tutorial/assets/163683760/03cea7ec-f9f6-4bc8-aad8-c0a1b46ca62e)# Building a Decentralized Exchange on Celo with Solidity: A Comprehensive Tutorial
-
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Smart Contract Overview](#smart-contract-overview)
