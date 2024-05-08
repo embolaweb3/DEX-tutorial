@@ -406,6 +406,7 @@ interface IERC20 {
 
 contract DecentralizedExchange {
     address private admin;
+    bool private locked;
     mapping(address => mapping(address => uint256)) private balances;
     mapping(address => bool) private tokens;
 
@@ -494,6 +495,20 @@ contract DecentralizedExchange {
 
         emit OrderFilled(order.tokenGive, order.amountGive, order.tokenGet, order.amountGet, msg.sender);
     }
+
+        // Fallback function to reject Ether transactions
+    // fallback() external {
+    //    revert("This contract does not accept Ether");
+    // }
+
+    // Reentrancy guard to protect against reentrancy attacks
+    modifier noReentrancy() {
+        require(!locked, "Reentrant call");
+        locked = true;
+        _;
+        locked = false;
+    }
+
 }
 
 ```
