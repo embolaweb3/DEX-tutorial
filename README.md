@@ -395,7 +395,7 @@ function createOrder(address _tokenGive, uint256 _amountGive, address _tokenGet,
 
 ```solidity
 // SPDX-License-Identifier: MIT
-pragma solidity  0.8.0;
+pragma solidity 0.8.0;
 
 interface IERC20 {
     function transfer(address recipient, uint256 amount) external returns (bool);
@@ -405,9 +405,10 @@ interface IERC20 {
 }
 
 contract DecentralizedExchange {
-    address public admin;
-    mapping(address => mapping(address => uint256)) public balances;
-    mapping(address => bool) public tokens;
+    address private admin;
+    bool private locked;
+    mapping(address => mapping(address => uint256)) private balances;
+    mapping(address => bool) private tokens;
 
     event TokenAdded(address indexed token);
     event TokenRemoved(address indexed token);
@@ -450,18 +451,23 @@ contract DecentralizedExchange {
 
     function deposit(address _token, uint256 _amount) external {
         require(tokens[_token], "Token not supported");
+        require(_amount > 0, "Deposit amount must be greater than zero");
+        
         IERC20(_token).transferFrom(msg.sender, address(this), _amount);
         balances[_token][msg.sender] += _amount;
     }
 
     function withdraw(address _token, uint256 _amount) external {
         require(balances[_token][msg.sender] >= _amount, "Insufficient balance");
+        require(_amount > 0, "Withdrawal amount must be greater than zero");
+
         balances[_token][msg.sender] -= _amount;
         IERC20(_token).transfer(msg.sender, _amount);
     }
 
     function createOrder(address _tokenGive, uint256 _amountGive, address _tokenGet, uint256 _amountGet) external {
         require(tokens[_tokenGive] && tokens[_tokenGet], "Tokens not supported");
+        require(_amountGive > 0 && _amountGet > 0, "Order amounts must be greater than zero");
         require(balances[_tokenGive][msg.sender] >= _amountGive, "Insufficient balance");
 
         Order memory newOrder = Order({
@@ -479,6 +485,7 @@ contract DecentralizedExchange {
 
     function fillOrder(uint256 _orderId) external {
         require(_orderId < orders.length, "Invalid order ID");
+
         Order memory order = orders[_orderId];
 
         require(balances[order.tokenGive][msg.sender] >= order.amountGive, "Insufficient balance");
@@ -488,6 +495,20 @@ contract DecentralizedExchange {
 
         emit OrderFilled(order.tokenGive, order.amountGive, order.tokenGet, order.amountGet, msg.sender);
     }
+
+        // Fallback function to reject Ether transactions
+    // fallback() external {
+    //    revert("This contract does not accept Ether");
+    // }
+
+    // Reentrancy guard to protect against reentrancy attacks
+    modifier noReentrancy() {
+        require(!locked, "Reentrant call");
+        locked = true;
+        _;
+        locked = false;
+    }
+
 }
 
 ```
